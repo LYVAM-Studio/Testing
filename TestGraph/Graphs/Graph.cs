@@ -84,5 +84,48 @@ namespace Reconnect.Electronics.Graph
         {
             FillBranch(EntryPoint);
         }
+        public double GetGlobalIntensity()
+        {
+            if (Branches.Count == 0)
+                throw new ArgumentException("No branches have been initialized in this circuit");
+            List<Branch> tmpBranchCopy = new List<Branch>(Branches);
+            var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
+            while (parallelBranchesGroups.Count != 0)
+            {
+                foreach (List<Branch> branchesGroup in parallelBranchesGroups)
+                {
+                    int resistance = branchesGroup[0].Resistance;
+                    Node node1 = new Node(branchesGroup[0].Nodes.n1);
+                    Node node2 = new Node(branchesGroup[0].Nodes.n2);
+                    tmpBranchCopy.Remove(branchesGroup[0]);
+                    int i = 1;
+                    string name = "R_eq";
+                    while (i < branchesGroup.Count)
+                    {
+                        name += $"_{branchesGroup[i].GetHashCode()}";
+                        tmpBranchCopy.Remove(branchesGroup[i]);
+                        resistance = (resistance * branchesGroup[i].Resistance) / (resistance + branchesGroup[i].Resistance);
+                        i++;
+                    }
+                    // TODO : fix remove components from adjacets of nodes from branches merged
+                    Branch b = new Branch(node1, node2,
+                        new List<Vertice> { new ElecComponent(name, resistance) });
+                    tmpBranchCopy.Add(b);
+                    GraphUtils.MergeBranchInSeries(b, tmpBranchCopy);
+                }
+                parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
+            }
+
+            int totalResistance = 0;
+            foreach (Branch branch in tmpBranchCopy)
+            {
+                totalResistance += branch.Resistance;
+            }
+
+            if (totalResistance == 0)
+                throw new ArgumentException("No resistance in the circuit, maybe shortcut ?");
+
+            return EntryPoint.InputTension / totalResistance;
+        }
     }
 }
