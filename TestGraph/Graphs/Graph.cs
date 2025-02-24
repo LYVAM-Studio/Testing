@@ -35,24 +35,24 @@ namespace Reconnect.Electronics.Graph
 
         private Branch BranchTraversalBuild(Vertice node, Vertice from, List<Vertice> alreadyVisited, out Vertice nextNode)
         {
-            Branch branch = new Branch();
-            branch.AddVertice(node);
-            
+            List<Vertice> branchVertices = new List<Vertice>();
             Vertice currentVertice = from;
             Vertice previousVertice = node;
-            while (currentVertice.Component is not Node)
+            
+            // branchVertices.Add(node);
+            while (currentVertice is not Node)
             {
                 alreadyVisited.Add(currentVertice);
-                Console.WriteLine($"{currentVertice}");
-                branch.AddVertice(currentVertice);
+                //Console.WriteLine($"{currentVertice}");
+                branchVertices.Add(currentVertice);
                 (currentVertice, previousVertice) = (currentVertice.AdjacentComponents.Find(v => v != previousVertice)!, currentVertice);
             }
-            branch.AddVertice(currentVertice);
+            // branchVertices.Add(currentVertice);
             nextNode = currentVertice;
-            return branch;
+            return new Branch((Node)node, (Node)currentVertice, branchVertices);
         }
         
-        private void FillBranch(Branch branch, Vertice vertice)
+        private void FillBranch(Vertice vertice)
         {
             List<Vertice> alreadyVisited = new List<Vertice>();
             Queue<Vertice> nodesToVisit = new Queue<Vertice>();
@@ -82,8 +82,7 @@ namespace Reconnect.Electronics.Graph
         
         public void DefineBranches()
         {
-            Branch branch = new Branch();
-            FillBranch(branch, EntryPoint);
+            FillBranch(EntryPoint);
         }
     }
 }
