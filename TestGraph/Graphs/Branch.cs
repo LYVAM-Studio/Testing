@@ -44,7 +44,9 @@ namespace Reconnect.Electronics.Graph
             }
         }
 
-        public override string ToString() => $"[{String.Join(", ", Components)}]";
+        public bool AreParallelBranches(Branch other) =>
+            (other.Nodes.n1, other.Nodes.n2) == (Nodes.n2, Nodes.n1) || other.Nodes == Nodes;
+        
         public override string ToString() => $"{Nodes.n1} [{String.Join(", ", Components)}] {Nodes.n2}";
         public string Display() => $"{Nodes.n1} [{String.Join(", ", Components)}] {Nodes.n2} - Resistance : {Resistance} Ohms";
     }
