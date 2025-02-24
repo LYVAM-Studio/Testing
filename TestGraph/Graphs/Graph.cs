@@ -84,6 +84,9 @@ namespace Reconnect.Electronics.Graph
         {
             FillBranch(EntryPoint);
         }
+
+        public void RemoveBranch(Branch b) => Branches.Remove(b);
+        
         public double GetGlobalIntensity()
         {
             if (Branches.Count == 0)
