@@ -45,5 +45,7 @@ namespace Reconnect.Electronics.Graph
         }
 
         public override string ToString() => $"[{String.Join(", ", Components)}]";
+        public override string ToString() => $"{Nodes.n1} [{String.Join(", ", Components)}] {Nodes.n2}";
+        public string Display() => $"{Nodes.n1} [{String.Join(", ", Components)}] {Nodes.n2} - Resistance : {Resistance} Ohms";
     }
 }
