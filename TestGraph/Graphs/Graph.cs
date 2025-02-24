@@ -33,43 +33,6 @@ namespace Reconnect.Electronics.Graph
         public void AddVertice(Vertice vertice) => Vertices.Add(vertice);
         public void AddVertice(List<Vertice> verticesList) => Vertices.AddRange(verticesList);
 
-        /*private void FillBranch(Branch branch, Vertice vertice, List<Vertice> alreadyVisited)
-        {
-            if (alreadyVisited.Contains(vertice))
-                return;
-            alreadyVisited.Add(vertice);
-            if (vertice.Component is Node)
-            {
-                Console.WriteLine($"{vertice} is a node");
-                branch.AddVertice(vertice); // add the last element of the branch
-                Branches.Add(branch);
-                
-                foreach (Vertice adjacentComponent in vertice.AdjacentComponents)
-                {
-                    // ignore already visited adjacent components
-                    if (alreadyVisited.Contains(adjacentComponent))
-                        continue;
-                    Console.WriteLine($"new branch created from {adjacentComponent}");
-                    Branch newBranch = new Branch(); // new branch for each additional adjacent in this node
-                    Branches.Add(newBranch);
-                    newBranch.AddVertice(vertice); // add branch stating vertice
-                    FillBranch(newBranch, adjacentComponent, alreadyVisited);
-                }
-            }
-            else
-            {
-                Console.WriteLine($"{vertice} is a not a node");
-                branch.AddVertice(vertice);
-                foreach (Vertice adjacentComponent in vertice.AdjacentComponents)
-                {
-                    Console.WriteLine($"{adjacentComponent} added to the branch");
-                    if (alreadyVisited.Contains(adjacentComponent))
-                        continue;
-                    FillBranch(branch, adjacentComponent, alreadyVisited);
-                }
-            }
-        }*/
-
         private Branch BranchTraversalBuild(Vertice node, Vertice from, List<Vertice> alreadyVisited, out Vertice nextNode)
         {
             Branch branch = new Branch();
@@ -97,19 +60,19 @@ namespace Reconnect.Electronics.Graph
             while (nodesToVisit.Count > 0)
             {
                 Vertice node = nodesToVisit.Dequeue();
-                Console.WriteLine($"{node} node visited");
+                //Console.WriteLine($"{node} node visited");
                 alreadyVisited.Add(node);
                 foreach (Vertice verticeAdjacentComponent in node.AdjacentComponents)
                 {
                     if (alreadyVisited.Contains(verticeAdjacentComponent))
                         continue;
-                    Console.WriteLine($"branch traversal from {verticeAdjacentComponent}");
+                    //Console.WriteLine($"branch traversal from {verticeAdjacentComponent}");
                     Branch b = BranchTraversalBuild(node, verticeAdjacentComponent,alreadyVisited, out Vertice nextNode);
-                    Console.WriteLine($"{b}");
+                    //Console.WriteLine($"{b}");
                     Branches.Add(b);
                     if (!alreadyVisited.Contains(nextNode))
                     {
-                        Console.WriteLine($"{nextNode} is enqueued");
+                        //Console.WriteLine($"{nextNode} is enqueued");
                         nodesToVisit.Enqueue(nextNode);
                     }
                 }
