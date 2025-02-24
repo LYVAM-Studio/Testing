@@ -7,16 +7,41 @@ namespace Reconnect.Electronics.Graph
     public class Branch
     {
         public List<Vertice> Components;
+        public (Node n1, Node n2) Nodes;
+        public int Resistance;
 
-        public Branch() => Components = new List<Vertice>();
-        public Branch(IEnumerable<Vertice> components) => Components = new List<Vertice>(components);
-        
-        public void AddVertice(Vertice Component)
+        public Branch(Node node1, Node node2)
+        {
+            Nodes.n1 = node1;
+            Nodes.n2 = node2;
+            Components = new List<Vertice>();
+            Resistance = 0;
+        }
+        public Branch(Node node1, Node node2, IEnumerable<Vertice> components)
+        {
+            Nodes.n1 = node1;
+            Nodes.n2 = node2;
+            Components = new List<Vertice>();
+            Resistance = 0;
+            AddVertice(components);
+        }
+
+        public void AddVertice(Vertice vertice)
         {
             // skip if it is already in the list
-            if (Components.Contains(Component))
+            if (Components.Contains(vertice))
                 return;
-            Components.Add(Component);
+            
+            Components.Add(vertice);
+            if (vertice is ElecComponent component)
+                Resistance += component.Resistance;
+        }
+        public void AddVertice(IEnumerable<Vertice> vertices)
+        {
+            foreach (Vertice vertice in vertices)
+            {
+                AddVertice(vertice);
+            }
         }
 
         public override string ToString() => $"[{String.Join(", ", Components)}]";
