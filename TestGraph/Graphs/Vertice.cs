@@ -4,21 +4,18 @@ using TestGraph.Components;
 
 namespace Reconnect.Electronics.Graph
 {
-    public class Vertice
+    public abstract class Vertice
     {
-        public IElecComponent Component { get; }
         public List<Vertice> AdjacentComponents { get; }
         public string Name { get; }
-        public Vertice(string name, IElecComponent component)
+        public Vertice(string name)
         {
             AdjacentComponents = new List<Vertice>();
-            Component = component;
             Name = name;
         }
         
-        public Vertice(string name, IElecComponent component, List<Vertice> adjacentComponents)
+        public Vertice(string name, List<Vertice> adjacentComponents)
         {
-            Component = component;
             AdjacentComponents = adjacentComponents;
             Name = name;
         }
@@ -32,10 +29,10 @@ namespace Reconnect.Electronics.Graph
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, Component);
+            return HashCode.Combine(Name, AdjacentComponents);
         }
 
-        private bool Equals(Vertice other) => Component == other.Component && AdjacentComponents == other.AdjacentComponents;
+        private bool Equals(Vertice other) => Name == other.Name && AdjacentComponents == other.AdjacentComponents;
 
         public override string ToString()
         {

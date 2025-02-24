@@ -9,10 +9,10 @@ namespace Reconnect.Electronics.Graph
         public string Name;
         public List<Vertice> Vertices;
         public List<Branch> Branches;
-        public Vertice EntryPoint;
-        public Vertice ExitPoint;
+        public CircuitInput EntryPoint;
+        public CircuitOutput ExitPoint;
 
-        public Graph(string name, Vertice entryPoint, Vertice exitPoint)
+        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint)
         {
             Name = name;
             Vertices = new List<Vertice>() ;
@@ -21,7 +21,7 @@ namespace Reconnect.Electronics.Graph
             ExitPoint = exitPoint;
         }
         
-        public Graph(string name, Vertice entryPoint, Vertice exitPoint, List<Vertice> vertices)
+        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, List<Vertice> vertices)
         {
             Name = name;
             Vertices = vertices;
