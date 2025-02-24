@@ -5,19 +5,19 @@ using TestGraph.Components;
 
 Console.WriteLine("Hello, World!");
 
-Vertice In = new Vertice("In",new CircuitInput());
-Vertice Out = new Vertice("Out",new CircuitOutput());
+CircuitInput In = new CircuitInput("In", 230, 16);
+CircuitOutput Out = new CircuitOutput("Out");
 
 Graph g = new Graph("test", In, Out);
-Vertice r1 = new Vertice("r1",new IElecComponent());
-Vertice r2 = new Vertice("r2",new IElecComponent());
-Vertice r3 = new Vertice("r3",new IElecComponent());
-Vertice l1 = new Vertice("l1",new IElecComponent());
-Vertice l2 = new Vertice("l2",new IElecComponent());
-Vertice s = new Vertice("s",new IElecComponent());
+Vertice r1 = new ElecComponent("r1", 200);
+Vertice r2 = new ElecComponent("r2", 150);
+Vertice r3 = new ElecComponent("r3", 100);
+Vertice l1 = new Lamp("l1", 529);
+Vertice l2 = new Lamp("l2", 529);
+Vertice s = new Switch("s", false);
 
-Vertice n1 = new Vertice("n1", new Node());
-Vertice n2 = new Vertice("n2", new Node());
+Vertice n1 = new Node("n1");
+Vertice n2 = new Node("n2");
 
 List<Vertice> verticesList = new List<Vertice> {r1, r1, r3, l1, l2, s, n1, n2};
 In.AddAdjacent(new List<Vertice>{r1, l1, r2});
@@ -33,8 +33,25 @@ l2.AddAdjacent(new List<Vertice> {n2, Out});
 s.AddAdjacent(new List<Vertice> {n1, n2});
 g.AddVertice(verticesList);
 g.DefineBranches();
+
+/*
 Console.WriteLine('\n');
 foreach (Branch branch in g.Branches)
 {
     Console.WriteLine(branch);
 }
+*/
+
+//var parallelBranchGroups = GraphUtils.GetParallelBranchGroups(g.Branches);
+
+/*
+foreach (List<Branch> parallelBranchGroup in parallelBranchGroups)
+{
+    string branches = String.Join(" | ", parallelBranchGroup);
+    Console.WriteLine(branches);
+}*/
+
+double I = g.GetGlobalIntensity();
+Console.WriteLine($"{I} Amps");
+
+Console.WriteLine("breakpoint");
