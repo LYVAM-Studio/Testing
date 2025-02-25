@@ -6,7 +6,8 @@ public interface IElecComponent
     public double R { get; }
     public void DoSomethingWithCurrent(double i, double u)
     {
-        Console.WriteLine($"{Name} received {u}V and {i}A");
+        Console.WriteLine($"{Name} received {u:F} V and {i:F} A");
+        // Console.WriteLine($"{Name} received {u} V and {i} A");
     }
 }
 
