@@ -8,7 +8,7 @@ namespace Reconnect.Electronics.Graph
     {
         public List<Vertice> Components;
         public (Node n1, Node n2) Nodes;
-        public int Resistance;
+        public double Resistance;
 
         public Branch(Node node1, Node node2)
         {

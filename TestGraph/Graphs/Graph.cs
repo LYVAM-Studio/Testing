@@ -86,6 +86,23 @@ namespace Reconnect.Electronics.Graph
         }
 
         public void RemoveBranch(Branch b) => Branches.Remove(b);
+
+        private void RemoveAdjacentFromBranchComponents(Branch branch, (Node, Node) nodes)
+        {
+            foreach (Vertice branchComponent in branch.Components)
+            {
+                nodes.Item1.AdjacentComponents.Remove(branchComponent);
+                nodes.Item2.AdjacentComponents.Remove(branchComponent);
+            }
+        }
+        
+        private void RemoveAdjacentFromAllBranches(List<Branch> branches, Branch branchToRemove)
+        {
+            foreach (Branch branch in branches)
+            {
+                RemoveAdjacentFromBranchComponents(branchToRemove, branch.Nodes);
+            }
+        }
         
         public double GetGlobalIntensity()
         {
@@ -95,31 +112,44 @@ namespace Reconnect.Electronics.Graph
             var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
             while (parallelBranchesGroups.Count != 0)
             {
-                foreach (List<Branch> branchesGroup in parallelBranchesGroups)
+                foreach (List<Branch> parallelBranches in parallelBranchesGroups)
                 {
-                    int resistance = branchesGroup[0].Resistance;
-                    Node node1 = new Node(branchesGroup[0].Nodes.n1);
-                    Node node2 = new Node(branchesGroup[0].Nodes.n2);
-                    tmpBranchCopy.Remove(branchesGroup[0]);
-                    int i = 1;
+                    // int resistance = parallelBranches[0].Resistance;
+                    double resistance = 0;
+                    Node node1 = new Node(parallelBranches[0].Nodes.n1);
+                    Node node2 = new Node(parallelBranches[0].Nodes.n2);
+                    // tmpBranchCopy.Remove(parallelBranches[0]);
+                    // int i = 1;
                     string name = "R_eq";
-                    while (i < branchesGroup.Count)
+                    foreach (Branch branch in parallelBranches)
                     {
-                        name += $"_{branchesGroup[i].GetHashCode()}";
-                        tmpBranchCopy.Remove(branchesGroup[i]);
-                        resistance = (resistance * branchesGroup[i].Resistance) / (resistance + branchesGroup[i].Resistance);
-                        i++;
+                        // RemoveAdjacentFromBranchComponents(branch, node1);
+                        // RemoveAdjacentFromBranchComponents(branch, node2);
+                        name += $"_{branch.GetHashCode()}";
+                        tmpBranchCopy.Remove(branch);
+                        if (branch.Resistance > 0)
+                            resistance += 1 / (double) branch.Resistance;
                     }
-                    // TODO : fix remove components from adjacets of nodes from branches merged
+                    /*while (i < parallelBranches.Count)
+                    {
+                        RemoveAdjacentFromBranchComponents(parallelBranches[i], node1);
+                        RemoveAdjacentFromBranchComponents(parallelBranches[i], node2);
+                        name += $"_{parallelBranches[i].GetHashCode()}";
+                        tmpBranchCopy.Remove(parallelBranches[i]);
+                        resistance = (resistance * parallelBranches[i].Resistance) / (resistance + parallelBranches[i].Resistance);
+                        i++;
+                    }*/
+                    // TODO : fix remove components from adjacents of nodes from branches merged
                     Branch b = new Branch(node1, node2,
-                        new List<Vertice> { new ElecComponent(name, resistance) });
+                        new List<Vertice> { new ElecComponent(name, 1/resistance) });
                     tmpBranchCopy.Add(b);
+                    RemoveAdjacentFromAllBranches(tmpBranchCopy, b);
                     GraphUtils.MergeBranchInSeries(b, tmpBranchCopy);
                 }
                 parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
             }
 
-            int totalResistance = 0;
+            double totalResistance = 0;
             foreach (Branch branch in tmpBranchCopy)
             {
                 totalResistance += branch.Resistance;
