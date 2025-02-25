@@ -4,7 +4,7 @@ using TestGraph.Components;
 
 namespace Reconnect.Electronics.Graph
 {
-    public abstract class Vertice
+    public class Vertice
     {
         public List<Vertice> AdjacentComponents { get; }
         public string Name { get; }
