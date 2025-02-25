@@ -1,57 +1,30 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Reconnect.Electronics.Graph;
-using TestGraph.Components;
 
-Console.WriteLine("Hello, World!");
+using TestGraph.LomisTry;
 
-CircuitInput In = new CircuitInput("In", 230, 16);
-CircuitOutput Out = new CircuitOutput("Out");
 
-Graph g = new Graph("test", In, Out);
-Vertice r1 = new ElecComponent("r1", 200);
-Vertice r2 = new ElecComponent("r2", 150);
-Vertice r3 = new ElecComponent("r3", 100);
-Vertice l1 = new Lamp("l1", 529);
-Vertice l2 = new Lamp("l2", 529);
-Vertice s = new Switch("s", false);
+var nodeIn = new Node(0, "IN");
+var nodeN1 = new Node(1, "N1");
+var nodeN2 = new Node(2, "N2");
+var nodeOut = new Node(3, "OUT");
 
-Vertice n1 = new Node("n1");
-Vertice n2 = new Node("n2");
+var light1 = new Light("L1", 529);
+var light2 = new Light("L2", 529);
+var resistor1 = new Resistor("R1", 200);
+var resistor2 = new Resistor("R2", 150);
+var resistor3 = new Resistor("R3", 100);
+var switch1 = new Resistor("S", 0);
 
-List<Vertice> verticesList = new List<Vertice> {r1, r1, r3, l1, l2, s, n1, n2};
-In.AddAdjacent(new List<Vertice>{r1, l1, r2});
-Out.AddAdjacent(l2);
-n1.AddAdjacent(new List<Vertice> {l1, r2, s});
-n2.AddAdjacent(new List<Vertice> {r3, s, l2});
+var branchInN1Left = new BranchGraph(nodeIn, nodeN1, new List<IElecComponent>() { light1 });
+var branchInN1Right = new BranchGraph(nodeIn, nodeN1, new List<IElecComponent>() { resistor2 });
+var branchN1N2 = new BranchGraph(nodeN1, nodeN2, new List<IElecComponent>() { switch1 });
+var branchInN2 = new BranchGraph(nodeIn, nodeN2, new List<IElecComponent>() { resistor1, resistor3 });
+var branchN2Out = new BranchGraph(nodeN2, nodeOut, new List<IElecComponent>() { light2 });
 
-r1.AddAdjacent(new List<Vertice> {In, r3});
-r2.AddAdjacent(new List<Vertice> {In, n1});
-r3.AddAdjacent(new List<Vertice> {r1, n2});
-l1.AddAdjacent(new List<Vertice> {In, n1});
-l2.AddAdjacent(new List<Vertice> {n2, Out});
-s.AddAdjacent(new List<Vertice> {n1, n2});
-g.AddVertice(verticesList);
-g.DefineBranches();
+var graphInN1 = new ParallelGraph(nodeIn, nodeN1, new List<Graph>() { branchInN1Left, branchInN1Right });
+var graphInN2Right = new SeriesGraph(nodeIn, nodeN2, new List<Graph>() { graphInN1, branchN1N2 });
+var graphInN2 = new ParallelGraph(nodeIn, nodeN2, new List<Graph>() { branchInN2, graphInN2Right });
+var main = new SeriesGraph(nodeIn, nodeOut, new List<Graph>(){graphInN2, branchN2Out});
 
-/*
-Console.WriteLine('\n');
-foreach (Branch branch in g.Branches)
-{
-    Console.WriteLine(branch);
-}
-*/
-
-//var parallelBranchGroups = GraphUtils.GetParallelBranchGroups(g.Branches);
-
-/*
-foreach (List<Branch> parallelBranchGroup in parallelBranchGroups)
-{
-    string branches = String.Join(" | ", parallelBranchGroup);
-    Console.WriteLine(branches);
-}*/
-
-double I = g.GetGlobalIntensity();
-Console.WriteLine($"{I} Amps");
-
-Console.WriteLine("breakpoint");
+main.LaunchEletrons(230, 16);
