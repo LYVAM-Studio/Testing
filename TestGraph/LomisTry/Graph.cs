@@ -28,5 +28,5 @@ public abstract class Graph
     }
 
     public abstract double ComputeEqResistance();
-    public abstract void LaunchEletrons(double u, double i);
+    public abstract void LaunchElectrons(double u);
 }

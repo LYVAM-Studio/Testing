@@ -16,11 +16,10 @@ public class BranchGraph : Graph
         return eqR;
     }
 
-    public override void LaunchEletrons(double u, double i)
+    public override void LaunchElectrons(double u)
     {
+        var i = u / EqResistance;
         foreach (var component in Components)
-        {
-            component.DoSomethingWithCurrent(u, i);
-        }
+            component.DoSomethingWithCurrent(component.R * i, i);
     }
 }

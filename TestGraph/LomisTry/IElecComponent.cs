@@ -1,12 +1,13 @@
 namespace TestGraph.LomisTry;
 
-
-
 public interface IElecComponent
 {
     public string Name { get; }
     public double R { get; }
-    public void DoSomethingWithCurrent(double u, double i);
+    public void DoSomethingWithCurrent(double i, double u)
+    {
+        Console.WriteLine($"{Name} received {u}V and {i}A");
+    }
 }
 
 public class Resistor : IElecComponent
@@ -18,11 +19,6 @@ public class Resistor : IElecComponent
         Name = name;
         R = r;
     }
-
-    public void DoSomethingWithCurrent(double u, double i)
-    {
-        Console.WriteLine($"R: {Name} received {u}V and {i}A");
-    }
 }
 
 public class Light : IElecComponent
@@ -33,10 +29,5 @@ public class Light : IElecComponent
     {
         Name = name;
         R = r;
-    }
-
-    public void DoSomethingWithCurrent(double u, double i)
-    {
-        Console.WriteLine($"L: {Name} received {u}V and {i}A");
     }
 }

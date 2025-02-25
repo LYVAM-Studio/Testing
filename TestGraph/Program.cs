@@ -27,4 +27,4 @@ var graphInN2Right = new SeriesGraph(nodeIn, nodeN2, [graphInN1, branchN1N2]);
 var graphInN2 = new ParallelGraph(nodeIn, nodeN2, [branchInN2, graphInN2Right]);
 var main = new SeriesGraph(nodeIn, nodeOut, [graphInN2, branchN2Out]);
 
-main.LaunchEletrons(230, 16);
+main.LaunchElectrons(16);

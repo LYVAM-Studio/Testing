@@ -14,11 +14,9 @@ public class ParallelGraph : Graph
         return 1 / eqR;
     }
 
-    public override void LaunchEletrons(double u, double i)
+    public override void LaunchElectrons(double u)
     {
         foreach (var sub in SubGraphs)
-        {
-            sub.LaunchEletrons(u, sub.EqResistance / this.EqResistance * i);
-        }
+            sub.LaunchElectrons(u);
     }
 }

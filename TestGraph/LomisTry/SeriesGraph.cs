@@ -14,11 +14,10 @@ public class SeriesGraph: Graph
         return eqR;
     }
 
-    public override void LaunchEletrons(double u, double i)
+    public override void LaunchElectrons(double u)
     {
+        var i = u / EqResistance;
         foreach (var sub in SubGraphs)
-        {
-            sub.LaunchEletrons(u, i); // Is u conserved?
-        }
+            sub.LaunchElectrons(sub.EqResistance * i);
     }
 }
