@@ -18,4 +18,7 @@ public class CircuitInput : Node
         InputTension = inputTension;
         MaxIntensity = inputIntensity;
     }
+    
+    public override int AdjacentCount() => AdjacentComponents.Count + 1;
+
 }
