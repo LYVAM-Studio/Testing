@@ -96,67 +96,50 @@ namespace Reconnect.Electronics.Graph
             }
         }
         
-        private void RemoveAdjacentFromAllBranches(List<Branch> branches, Branch branchToRemove)
-        {
-            foreach (Branch branch in branches)
-            {
-                RemoveAdjacentFromBranchComponents(branchToRemove, branch.Nodes);
-            }
-        }
-        
         public double GetGlobalIntensity()
         {
             if (Branches.Count == 0)
                 throw new ArgumentException("No branches have been initialized in this circuit");
-            List<Branch> tmpBranchCopy = new List<Branch>(Branches);
-            var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
+
+            var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
             while (parallelBranchesGroups.Count != 0)
             {
                 foreach (List<Branch> parallelBranches in parallelBranchesGroups)
                 {
-                    // int resistance = parallelBranches[0].Resistance;
                     double resistance = 0;
-                    Node node1 = new Node(parallelBranches[0].Nodes.n1);
-                    Node node2 = new Node(parallelBranches[0].Nodes.n2);
-                    // tmpBranchCopy.Remove(parallelBranches[0]);
-                    // int i = 1;
+                    Node node1 = parallelBranches[0].Nodes.n1;
+                    Node node2 = parallelBranches[0].Nodes.n2;
                     string name = "R_eq";
                     foreach (Branch branch in parallelBranches)
                     {
-                        // RemoveAdjacentFromBranchComponents(branch, node1);
-                        // RemoveAdjacentFromBranchComponents(branch, node2);
+                        RemoveAdjacentFromBranchComponents(branch, (node1, node2));
                         name += $"_{branch.GetHashCode()}";
-                        tmpBranchCopy.Remove(branch);
+                        RemoveBranch(branch);
                         if (branch.Resistance > 0)
                             resistance += 1 / (double) branch.Resistance;
                     }
-                    /*while (i < parallelBranches.Count)
-                    {
-                        RemoveAdjacentFromBranchComponents(parallelBranches[i], node1);
-                        RemoveAdjacentFromBranchComponents(parallelBranches[i], node2);
-                        name += $"_{parallelBranches[i].GetHashCode()}";
-                        tmpBranchCopy.Remove(parallelBranches[i]);
-                        resistance = (resistance * parallelBranches[i].Resistance) / (resistance + parallelBranches[i].Resistance);
-                        i++;
-                    }*/
-                    // TODO : fix remove components from adjacents of nodes from branches merged
+
+                    Vertice equivalentResistance = new ElecComponent(name, 1 / resistance);
+                    node1.AddAdjacent(equivalentResistance);
+                    node2.AddAdjacent(equivalentResistance);
                     Branch b = new Branch(node1, node2,
-                        new List<Vertice> { new ElecComponent(name, 1/resistance) });
-                    tmpBranchCopy.Add(b);
-                    RemoveAdjacentFromAllBranches(tmpBranchCopy, b);
-                    GraphUtils.MergeBranchInSeries(b, tmpBranchCopy);
+                        new List<Vertice> { equivalentResistance });
+                    Branches.Add(b);
+                    GraphUtils.MergeBranchInSeries(b, Branches);
                 }
-                parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
+                parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
             }
 
-            double totalResistance = 0;
-            foreach (Branch branch in tmpBranchCopy)
+            if (Branches.Count > 1)
+                throw new UnreachableException("There should be only one branch remaining");
+            /*foreach (Branch branch in Branches)
             {
                 totalResistance += branch.Resistance;
-            }
+            }*/
+            double totalResistance = Branches[0].Resistance;
 
             if (totalResistance == 0)
-                throw new ArgumentException("No resistance in the circuit, maybe shortcut ?");
+                throw new ArgumentException("No resistance in the circuit, maybe shortcut or empty ?");
 
             return EntryPoint.InputTension / totalResistance;
         }
