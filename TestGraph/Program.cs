@@ -8,12 +8,14 @@ Console.WriteLine("Hello, World!");
 CircuitInput In = new CircuitInput("In", 230, 16);
 CircuitOutput Out = new CircuitOutput("Out");
 
-Graph g = new Graph("test", In, Out);
+Vertice l2 = new Lamp("l2", 529);
+
+Graph g = new Graph("test", In, Out, (ElecComponent)l2);
 Vertice r1 = new ElecComponent("r1", 200);
 Vertice r2 = new ElecComponent("r2", 150);
 Vertice r3 = new ElecComponent("r3", 100);
 Vertice l1 = new Lamp("l1", 529);
-Vertice l2 = new Lamp("l2", 529);
+
 Vertice s = new Switch("s", false);
 
 Vertice n1 = new Node("n1");
@@ -51,7 +53,11 @@ foreach (List<Branch> parallelBranchGroup in parallelBranchGroups)
     Console.WriteLine(branches);
 }*/
 
+/*
 double I = g.GetGlobalIntensity();
 Console.WriteLine($"{I} Amps");
+*/
 
+double tensionL2 = g.GetVoltageTarget();
+Console.WriteLine($"The tension to the terminals of the target {g.Target.Name} is {double.Round(tensionL2, 3)} Volts !");
 Console.WriteLine("breakpoint");
