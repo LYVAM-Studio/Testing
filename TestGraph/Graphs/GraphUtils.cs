@@ -48,28 +48,28 @@ public static class GraphUtils
         {
             Branch graphBranch = branches[i];
             
-            if (graphBranch.Nodes.n1 == branch.Nodes.n1 && graphBranch.Nodes.n1.AdjacentComponents.Count == 2)
+            if (graphBranch.Nodes.n1 == branch.Nodes.n1 && graphBranch.Nodes.n1.AdjacentCount() == 2)
             {
                 graphBranch.Nodes.n1 = branch.Nodes.n2;
                 graphBranch.AddVertice(branch.Components);
                 branches.Remove(branch);
                 merged = graphBranch;
             }
-            else if (graphBranch.Nodes.n1 == branch.Nodes.n2 && graphBranch.Nodes.n1.AdjacentComponents.Count == 2)
+            else if (graphBranch.Nodes.n1 == branch.Nodes.n2 && graphBranch.Nodes.n1.AdjacentCount() == 2)
             {
                 graphBranch.Nodes.n1 = branch.Nodes.n1;
                 graphBranch.AddVertice(branch.Components);
                 branches.Remove(branch);
                 merged = graphBranch;
             }
-            else if (graphBranch.Nodes.n2 == branch.Nodes.n1 && graphBranch.Nodes.n2.AdjacentComponents.Count == 2)
+            else if (graphBranch.Nodes.n2 == branch.Nodes.n1 && graphBranch.Nodes.n2.AdjacentCount() == 2)
             {
                 graphBranch.Nodes.n2 = branch.Nodes.n2;
                 graphBranch.AddVertice(branch.Components);
                 branches.Remove(branch);
                 merged = graphBranch;
             }
-            else if (graphBranch.Nodes.n2 == branch.Nodes.n2 && graphBranch.Nodes.n2.AdjacentComponents.Count == 2)
+            else if (graphBranch.Nodes.n2 == branch.Nodes.n2 && graphBranch.Nodes.n2.AdjacentCount() == 2)
             {
                 graphBranch.Nodes.n2 = branch.Nodes.n1;
                 graphBranch.AddVertice(branch.Components);

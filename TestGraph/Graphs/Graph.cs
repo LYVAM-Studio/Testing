@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using TestGraph.Components;
 
 namespace Reconnect.Electronics.Graph
@@ -10,21 +12,24 @@ namespace Reconnect.Electronics.Graph
         public List<Vertice> Vertices;
         public List<Branch> Branches;
         public CircuitInput EntryPoint;
+        public ElecComponent Target;
         public CircuitOutput ExitPoint;
 
-        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint)
+        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, ElecComponent target)
         {
             Name = name;
             Vertices = new List<Vertice>() ;
             Branches = new List<Branch>() ;
             EntryPoint = entryPoint;
             ExitPoint = exitPoint;
+            Target = target;
         }
         
-        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, List<Vertice> vertices)
+        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, List<Vertice> vertices, ElecComponent target)
         {
             Name = name;
             Vertices = vertices;
+            Target = target;
             Branches = new List<Branch>() ;
             EntryPoint = entryPoint;
             ExitPoint = exitPoint;
@@ -86,49 +91,64 @@ namespace Reconnect.Electronics.Graph
         }
 
         public void RemoveBranch(Branch b) => Branches.Remove(b);
+
+        private void RemoveAdjacentFromBranchComponents(Branch branch, (Node, Node) nodes)
+        {
+            foreach (Vertice branchComponent in branch.Components)
+            {
+                nodes.Item1.AdjacentComponents.Remove(branchComponent);
+                nodes.Item2.AdjacentComponents.Remove(branchComponent);
+            }
+        }
         
         public double GetGlobalIntensity()
         {
             if (Branches.Count == 0)
                 throw new ArgumentException("No branches have been initialized in this circuit");
-            List<Branch> tmpBranchCopy = new List<Branch>(Branches);
-            var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
+
+            var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
             while (parallelBranchesGroups.Count != 0)
             {
-                foreach (List<Branch> branchesGroup in parallelBranchesGroups)
+                foreach (List<Branch> parallelBranches in parallelBranchesGroups)
                 {
-                    int resistance = branchesGroup[0].Resistance;
-                    Node node1 = new Node(branchesGroup[0].Nodes.n1);
-                    Node node2 = new Node(branchesGroup[0].Nodes.n2);
-                    tmpBranchCopy.Remove(branchesGroup[0]);
-                    int i = 1;
+                    double resistance = 0;
+                    Node node1 = parallelBranches[0].Nodes.n1;
+                    Node node2 = parallelBranches[0].Nodes.n2;
                     string name = "R_eq";
-                    while (i < branchesGroup.Count)
+                    foreach (Branch branch in parallelBranches)
                     {
-                        name += $"_{branchesGroup[i].GetHashCode()}";
-                        tmpBranchCopy.Remove(branchesGroup[i]);
-                        resistance = (resistance * branchesGroup[i].Resistance) / (resistance + branchesGroup[i].Resistance);
-                        i++;
+                        RemoveAdjacentFromBranchComponents(branch, (node1, node2));
+                        name += $"_{branch.GetHashCode()}";
+                        RemoveBranch(branch);
+                        if (branch.Resistance > 0)
+                            resistance += 1 / (double) branch.Resistance;
                     }
-                    // TODO : fix remove components from adjacets of nodes from branches merged
+
+                    Vertice equivalentResistance = new ElecComponent(name, 1 / resistance);
+                    node1.AddAdjacent(equivalentResistance);
+                    node2.AddAdjacent(equivalentResistance);
                     Branch b = new Branch(node1, node2,
-                        new List<Vertice> { new ElecComponent(name, resistance) });
-                    tmpBranchCopy.Add(b);
-                    GraphUtils.MergeBranchInSeries(b, tmpBranchCopy);
+                        new List<Vertice> { equivalentResistance });
+                    Branches.Add(b);
+                    GraphUtils.MergeBranchInSeries(b, Branches);
                 }
-                parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(tmpBranchCopy);
+                parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
             }
 
-            int totalResistance = 0;
-            foreach (Branch branch in tmpBranchCopy)
+            if (Branches.Count > 1)
+                throw new UnreachableException("There should be only one branch remaining");
+            /*foreach (Branch branch in Branches)
             {
                 totalResistance += branch.Resistance;
-            }
+            }*/
+            double totalResistance = Branches[0].Resistance;
 
             if (totalResistance == 0)
-                throw new ArgumentException("No resistance in the circuit, maybe shortcut ?");
+                throw new ArgumentException("No resistance in the circuit, maybe shortcut or empty ?");
 
             return EntryPoint.InputTension / totalResistance;
         }
+
+        public double GetVoltageTarget() => Target.GetVoltage(GetGlobalIntensity());
     }
 }
