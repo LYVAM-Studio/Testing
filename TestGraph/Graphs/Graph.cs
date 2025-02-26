@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using TestGraph.Components;
 
 namespace Reconnect.Electronics.Graph
@@ -10,21 +12,24 @@ namespace Reconnect.Electronics.Graph
         public List<Vertice> Vertices;
         public List<Branch> Branches;
         public CircuitInput EntryPoint;
+        public ElecComponent Target;
         public CircuitOutput ExitPoint;
 
-        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint)
+        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, ElecComponent target)
         {
             Name = name;
             Vertices = new List<Vertice>() ;
             Branches = new List<Branch>() ;
             EntryPoint = entryPoint;
             ExitPoint = exitPoint;
+            Target = target;
         }
         
-        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, List<Vertice> vertices)
+        public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, List<Vertice> vertices, ElecComponent target)
         {
             Name = name;
             Vertices = vertices;
+            Target = target;
             Branches = new List<Branch>() ;
             EntryPoint = entryPoint;
             ExitPoint = exitPoint;
@@ -143,5 +148,7 @@ namespace Reconnect.Electronics.Graph
 
             return EntryPoint.InputTension / totalResistance;
         }
+
+        public double GetVoltageTarget() => Target.GetVoltage(GetGlobalIntensity());
     }
 }

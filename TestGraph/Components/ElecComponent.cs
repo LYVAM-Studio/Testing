@@ -18,5 +18,12 @@ public class ElecComponent : Vertice
             throw new ArgumentException("Resistance of a component cannot be negative");
         Resistance = resistance;
     }
+
+    public double GetVoltage(double intensity)
+    {
+        if (intensity <= 0)
+            throw new ArgumentException("Intensity going through a component must be positive and non-zero");
+        return Resistance * intensity;
+    }
     
 }
