@@ -112,8 +112,8 @@ namespace Reconnect.Electronics.Graph
                 foreach (List<Branch> parallelBranches in parallelBranchesGroups)
                 {
                     double resistance = 0;
-                    Node node1 = parallelBranches[0].Nodes.n1;
-                    Node node2 = parallelBranches[0].Nodes.n2;
+                    Node node1 = parallelBranches[0].StartNode; // future nodes of the equivalent branch
+                    Node node2 = parallelBranches[0].EndNode;
                     string name = "R_eq";
                     foreach (Branch branch in parallelBranches)
                     {
@@ -124,7 +124,7 @@ namespace Reconnect.Electronics.Graph
                             resistance += 1 / (double) branch.Resistance;
                     }
 
-                    Vertice equivalentResistance = new ElecComponent(name, 1 / resistance);
+                    Vertice equivalentResistance = new Resistor(name, 1 / resistance); // resistor representing the equivalent resistance 
                     node1.AddAdjacent(equivalentResistance);
                     node2.AddAdjacent(equivalentResistance);
                     Branch b = new Branch(node1, node2,
