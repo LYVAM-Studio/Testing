@@ -15,6 +15,14 @@ namespace Reconnect.Electronics.Graph
         public ElecComponent Target;
         public CircuitOutput ExitPoint;
 
+        /// <summary>
+        /// Creates a new Graph that goes from a point to another,
+        /// and aims to get the tension at the terminals of the  <paramref name="target"/> component
+        /// </summary>
+        /// <param name="name">The name given to the graph</param>
+        /// <param name="entryPoint">The circuit input</param>
+        /// <param name="exitPoint">The circuit exit</param>
+        /// <param name="target">The target of the circuit future computations</param>
         public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, ElecComponent target)
         {
             Name = name;
@@ -24,7 +32,15 @@ namespace Reconnect.Electronics.Graph
             ExitPoint = exitPoint;
             Target = target;
         }
-        
+        /// <summary>
+        /// Creates a new Graph that goes from a point to another,
+        /// and aims to get the tension at the terminals of the <paramref name="target"/> component
+        /// </summary>
+        /// <param name="name">The name given to the graph</param>
+        /// <param name="entryPoint">The circuit input</param>
+        /// <param name="exitPoint">The circuit exit</param>
+        /// <param name="vertices">The list of vertices contained in the graph</param>
+        /// <param name="target">The target of the circuit future computations</param>
         public Graph(string name, CircuitInput entryPoint, CircuitOutput exitPoint, List<Vertice> vertices, ElecComponent target)
         {
             Name = name;
@@ -34,8 +50,16 @@ namespace Reconnect.Electronics.Graph
             EntryPoint = entryPoint;
             ExitPoint = exitPoint;
         }
-        
+        /// <summary>
+        /// Add a vertice to the graph
+        /// </summary>
+        /// <param name="vertice">The vertice to add</param>
         public void AddVertice(Vertice vertice) => Vertices.Add(vertice);
+        
+        /// <summary>
+        /// Add multiple vertices to the graph
+        /// </summary>
+        /// <param name="verticesList">The vertices to add</param>
         public void AddVertice(List<Vertice> verticesList) => Vertices.AddRange(verticesList);
         
         /// <summary>
@@ -154,23 +178,41 @@ namespace Reconnect.Electronics.Graph
             Branches = branches; // save it into the graph property
         }
 
+        /// <summary>
+        /// Remove a branch from the list of <see cref="Branches"/>  of the graph
+        /// </summary>
+        /// <param name="b"></param>
         public void RemoveBranch(Branch b) => Branches.Remove(b);
 
+        /// <summary>
+        /// Remove any component the given branch from the <see cref="Node.AdjacentComponents"/> of the given nodes
+        /// </summary>
+        /// <param name="branch">The branch</param>
+        /// <param name="nodes">A node 2-tuple</param>
         private void RemoveAdjacentFromBranchComponents(Branch branch, (Node, Node) nodes)
         {
             foreach (Vertice branchComponent in branch.Components)
             {
-                nodes.Item1.AdjacentComponents.Remove(branchComponent);
+                // remove if exists the component from the nodes adjacents
+                nodes.Item1.AdjacentComponents.Remove(branchComponent); 
                 nodes.Item2.AdjacentComponents.Remove(branchComponent);
             }
         }
-        
+        /// <summary>
+        /// Permits to get the Input intensity required by the circuit
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Thrown when <see cref="Branches"/> is empty</exception>
+        /// <exception cref="UnreachableException">Thrown when <see cref="Branches"/> becomes empty at the end of the precess</exception>
+        /// <exception cref="GraphException">Thrown when the equivalent resistance of the circuit is 0</exception>
         public double GetGlobalIntensity()
         {
             if (Branches.Count == 0)
                 throw new ArgumentException("No branches have been initialized in this circuit");
 
-            var parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
+            // get the list of all branches parallel with each other
+            List<List<Branch>> parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches); 
+            // proceeds to associate branches and their resistance in parallel until there are no more
             while (parallelBranchesGroups.Count != 0)
             {
                 foreach (List<Branch> parallelBranches in parallelBranchesGroups)
@@ -181,8 +223,9 @@ namespace Reconnect.Electronics.Graph
                     string name = "R_eq";
                     foreach (Branch branch in parallelBranches)
                     {
-                        RemoveAdjacentFromBranchComponents(branch, (node1, node2));
-                        name += $"_{branch.GetHashCode()}";
+                        // remove the components of the branch fron the adjacents of the nodes
+                        RemoveAdjacentFromBranchComponents(branch, (node1, node2)); 
+                        name += $"_{branch.GetHashCode()}"; // build unique new name for equivalent resistance
                         RemoveBranch(branch);
                         if (branch.Resistance > 0)
                             resistance += 1 / (double) branch.Resistance;
@@ -191,11 +234,15 @@ namespace Reconnect.Electronics.Graph
                     Vertice equivalentResistance = new Resistor(name, 1 / resistance); // resistor representing the equivalent resistance 
                     node1.AddAdjacent(equivalentResistance);
                     node2.AddAdjacent(equivalentResistance);
+                    
+                    // new branch, result of the merge
                     Branch b = new Branch(node1, node2,
                         new List<Vertice> { equivalentResistance });
-                    Branches.Add(b);
+                    // merge it with any other branch in series with it, if there is any
                     GraphUtils.MergeBranchInSeries(b, Branches);
+                    Branches.Add(b); // add the new branch to the Branches list
                 }
+                // search for new parallel branches groups
                 parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
             }
 
@@ -208,11 +255,16 @@ namespace Reconnect.Electronics.Graph
             double totalResistance = Branches[0].Resistance;
 
             if (totalResistance == 0)
-                throw new ArgumentException("No resistance in the circuit, maybe shortcut or empty ?");
-
+                throw new GraphException("No resistance in the circuit, maybe shortcut or empty ?");
+            
+            // Ohm's law : I = U / R
             return EntryPoint.InputTension / totalResistance;
         }
 
+        /// <summary>
+        /// Give the potential difference at the terminals of the <see cref="Target"/> component
+        /// </summary>
+        /// <returns>The tension in Volts</returns>
         public double GetVoltageTarget() => Target.GetVoltage(GetGlobalIntensity());
     }
 }
