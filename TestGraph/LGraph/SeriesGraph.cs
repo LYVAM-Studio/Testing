@@ -1,5 +1,6 @@
-namespace TestGraph.LomisTry;
+namespace TestGraph.LGraph;
 
+// The Graph subclass representing a sequence of graphs structured in series.
 public class SeriesGraph: Graph
 {
     public SeriesGraph(Node entryPoint, Node exitPoint, List<Graph> subGraphs) : base(entryPoint, exitPoint, subGraphs)

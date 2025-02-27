@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 
-using TestGraph.LomisTry;
+using TestGraph.LGraph;
 
 
 var nodeIn = new Node(0, "IN");

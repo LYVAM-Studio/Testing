@@ -1,8 +1,11 @@
-namespace TestGraph.LomisTry;
+namespace TestGraph.LGraph;
 
+// A int wrapper class to represent nodes. It is purely for visualisation purposes. 
 public class Node
 {
+    // The id of the node. It is used to test if a node is equal to another or not. It is supposed to be unique.
     public int Id { get; }
+    // The name of the node, purely for visualisation. It does not impact the comparison between nodes.
     public string Name { get; set; }
     public Node(int id, string name = "")
     {
@@ -29,5 +32,12 @@ public class Node
     public override int GetHashCode()
     {
         return Id;
+    }
+    
+    // A shortcut to easily create a node. The name and id are randomly chosen.
+    public static Node NewNode()
+    {
+        var i = new Random().Next();
+        return new Node(i, $"{i}");
     }
 }
