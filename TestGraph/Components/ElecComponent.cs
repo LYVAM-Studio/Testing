@@ -2,7 +2,7 @@ using Reconnect.Electronics.Graph;
 
 namespace TestGraph.Components;
 
-public class ElecComponent : Vertice
+public abstract class ElecComponent : Vertice
 {
     public double Resistance { get; set; }
     
@@ -19,11 +19,6 @@ public class ElecComponent : Vertice
         Resistance = resistance;
     }
 
-    public double GetVoltage(double intensity)
-    {
-        if (intensity <= 0)
-            throw new ArgumentException("Intensity going through a component must be positive and non-zero");
-        return Resistance * intensity;
-    }
-    
+    public abstract double GetVoltage(double intensity);
+
 }
