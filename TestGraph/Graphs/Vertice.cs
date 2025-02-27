@@ -23,8 +23,8 @@ namespace Reconnect.Electronics.Graph
         public void AddAdjacent(Vertice adjacent) => AdjacentComponents.Add(adjacent);
         public void AddAdjacent(IEnumerable<Vertice> adjacentsList) => AdjacentComponents.AddRange(adjacentsList);
         public virtual int AdjacentCount() => AdjacentComponents.Count;
-        public static bool operator==(Vertice left, Vertice right) => left is not null && left.Equals(right);
-        public static bool operator!=(Vertice left, Vertice right) => !(left == right);
+        public static bool operator==(Vertice? left, Vertice? right) => left is not null && right is not null && left.Equals(right);
+        public static bool operator!=(Vertice? left, Vertice? right) => !(left == right);
         public override bool Equals(object obj) => obj is Vertice pole && Equals(pole) ;
 
         public override int GetHashCode()
