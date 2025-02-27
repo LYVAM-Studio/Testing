@@ -11,9 +11,9 @@ namespace Reconnect.Electronics.Graph
         public string Name;
         public List<Vertice> Vertices;
         public List<Branch> Branches;
-        public CircuitInput EntryPoint;
-        public ElecComponent Target;
-        public CircuitOutput ExitPoint;
+        public readonly CircuitInput EntryPoint;
+        public readonly ElecComponent Target;
+        public readonly CircuitOutput ExitPoint;
 
         /// <summary>
         /// Creates a new Graph that goes from a point to another,
@@ -227,8 +227,8 @@ namespace Reconnect.Electronics.Graph
                         RemoveAdjacentFromBranchComponents(branch, (node1, node2)); 
                         name += $"_{branch.GetHashCode()}"; // build unique new name for equivalent resistance
                         RemoveBranch(branch);
-                        if (branch.Resistance > 0)
-                            resistance += 1 / (double) branch.Resistance;
+                        if (branch.Resistance != 0)
+                            resistance += 1 / (double) branch.Resistance; // apply equivalent resistance in parallel computation
                     }
 
                     Vertice equivalentResistance = new Resistor(name, 1 / resistance); // resistor representing the equivalent resistance 
@@ -245,15 +245,17 @@ namespace Reconnect.Electronics.Graph
                 // search for new parallel branches groups
                 parallelBranchesGroups = GraphUtils.GetParallelBranchGroups(Branches);
             }
-
-            if (Branches.Count > 1)
-                throw new UnreachableException("There should be only one branch remaining");
-            /*foreach (Branch branch in Branches)
+            
+            if (Branches.Count == 0)
+                throw new UnreachableException("There should be at least 1 branch remaining. This is not possible that there are no branch left !");
+            
+            // get the final resistance of the circuit, associating in series remaining branches
+            double totalResistance = 0;
+            foreach (Branch branch in Branches)
             {
                 totalResistance += branch.Resistance;
-            }*/
-            double totalResistance = Branches[0].Resistance;
-
+            }
+            
             if (totalResistance == 0)
                 throw new GraphException("No resistance in the circuit, maybe shortcut or empty ?");
             
