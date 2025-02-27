@@ -54,51 +54,60 @@ public static class GraphUtils
         return group;
     }
 
-    public static Branch? MergeBranchInSeries(Branch branch, Graph graph)
+    /// <summary>
+    /// Merge branches in series with the given branch
+    /// </summary>
+    /// <param name="branch">The branch taken as reference</param>
+    /// <param name="branches">The list of branch to try merging in series if possible</param>
+    public static void MergeBranchInSeries(Branch branch, List<Branch> branches)
     {
-        return MergeBranchInSeries(branch, graph.Branches);
-    }
-
-    public static Branch? MergeBranchInSeries(Branch branch, List<Branch> branches)
-    {
-        Branch? merged = null;
         int i = 0;
-        while (i < branches.Count && merged == null)
+        // repeats the process until all branches have been checked or there is only one branch (cannot be merged)
+        while (i < branches.Count && branches.Count > 1)
         {
             Branch graphBranch = branches[i];
-            
-            if (graphBranch.Nodes.n1 == branch.Nodes.n1 && graphBranch.Nodes.n1.AdjacentCount() == 2)
+            if (graphBranch == branch) // ignore if the branch is the one being tested
             {
-                graphBranch.Nodes.n1 = branch.Nodes.n2;
-                graphBranch.AddVertice(branch.Components);
-                branches.Remove(branch);
-                merged = graphBranch;
-            }
-            else if (graphBranch.Nodes.n1 == branch.Nodes.n2 && graphBranch.Nodes.n1.AdjacentCount() == 2)
-            {
-                graphBranch.Nodes.n1 = branch.Nodes.n1;
-                graphBranch.AddVertice(branch.Components);
-                branches.Remove(branch);
-                merged = graphBranch;
-            }
-            else if (graphBranch.Nodes.n2 == branch.Nodes.n1 && graphBranch.Nodes.n2.AdjacentCount() == 2)
-            {
-                graphBranch.Nodes.n2 = branch.Nodes.n2;
-                graphBranch.AddVertice(branch.Components);
-                branches.Remove(branch);
-                merged = graphBranch;
-            }
-            else if (graphBranch.Nodes.n2 == branch.Nodes.n2 && graphBranch.Nodes.n2.AdjacentCount() == 2)
-            {
-                graphBranch.Nodes.n2 = branch.Nodes.n1;
-                graphBranch.AddVertice(branch.Components);
-                branches.Remove(branch);
-                merged = graphBranch;
+                i++;
+                continue;
             }
 
+            Node? commonNode = FindCommonNode(branch, graphBranch);
+            if (commonNode is not null && commonNode.AdjacentComponents.Count == 2)
+                ApplyMergeBranchesInSeries(graphBranch, branch, commonNode, branches);
             i++;
         }
-
-        return merged;
+    }
+    
+    /// <summary>
+    /// Determines the node these branches have in common, if they have one
+    /// </summary>
+    /// <param name="branch">The first branch</param>
+    /// <param name="other">The second branch</param>
+    /// <returns>null if the branches have no node in common, else the common Node</returns>
+    private static Node? FindCommonNode(Branch branch, Branch other)
+    {
+        if (branch.StartNode == other.StartNode || branch.StartNode == other.EndNode)
+            return branch.StartNode;
+        if (branch.EndNode == other.StartNode || branch.EndNode == other.EndNode)
+            return branch.EndNode;
+        return null;
+    }
+    
+    /// <summary>
+    /// Merge the branches by adding their components and removing the one to be merged from the list of branches
+    /// </summary>
+    /// <param name="branch">The branch that will be the result of the merge</param>
+    /// <param name="branchToMerge">The branch that will be merged with branch and removed from the list branches</param>
+    /// <param name="commonNode">The node these branches have in common, making them in series</param>
+    /// <param name="branches">The list of branches</param>
+    /// <exception cref="ArgumentException">Thrown if the commonNode is not a common node of the branches</exception>
+    private static void ApplyMergeBranchesInSeries(Branch branch, Branch branchToMerge, Node commonNode, List<Branch> branches)
+    {
+        if (commonNode != FindCommonNode(branch, branchToMerge))
+            throw new ArgumentException("The common node is not common to the branches");
+        branch.StartNode = commonNode;
+        branch.AddVertice(branchToMerge.Components);
+        branches.Remove(branchToMerge);
     }
 }
