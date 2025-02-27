@@ -7,25 +7,43 @@ namespace Reconnect.Electronics.Graph
     public class Branch
     {
         public List<Vertice> Components;
-        public (Node n1, Node n2) Nodes;
+        public Node StartNode;
+        public Node EndNode;
         public double Resistance;
 
-        public Branch(Node node1, Node node2)
+        /// <summary>
+        /// Create a new branch being a list of components between 2 nodes.
+        /// The <see cref="Components"/> list is initialized empty
+        /// </summary>
+        /// <param name="startNode">The starting node of the branch</param>
+        /// <param name="endNode">The ending node of the branch</param>
+        public Branch(Node startNode, Node endNode)
         {
-            Nodes.n1 = node1;
-            Nodes.n2 = node2;
+            StartNode = startNode;
+            EndNode = endNode;
             Components = new List<Vertice>();
             Resistance = 0;
         }
-        public Branch(Node node1, Node node2, IEnumerable<Vertice> components)
+        /// <summary>
+        /// Create a new branch being a list of components between 2 nodes.
+        /// The <see cref="Components"/> list contains the components given
+        /// </summary>
+        /// <param name="startNode">The starting node of the branch</param>
+        /// <param name="endNode">The ending node of the branch</param>
+        /// <param name="components">The components the branch contains</param>
+        public Branch(Node startNode, Node endNode, IEnumerable<Vertice> components)
         {
-            Nodes.n1 = node1;
-            Nodes.n2 = node2;
+            StartNode = startNode;
+            EndNode = endNode;
             Components = new List<Vertice>();
             Resistance = 0;
             AddVertice(components);
         }
 
+        /// <summary>
+        /// Add a vertice to the <see cref="Components"/> list
+        /// </summary>
+        /// <param name="vertice">The vertice to add</param>
         public void AddVertice(Vertice vertice)
         {
             // skip if it is already in the list
@@ -36,6 +54,10 @@ namespace Reconnect.Electronics.Graph
             if (vertice is ElecComponent component)
                 Resistance += component.Resistance;
         }
+        /// <summary>
+        /// Add multiple vertices to the <see cref="Components"/> list
+        /// </summary>
+        /// <param name="vertices">The vertices to add</param>
         public void AddVertice(IEnumerable<Vertice> vertices)
         {
             foreach (Vertice vertice in vertices)
@@ -44,10 +66,45 @@ namespace Reconnect.Electronics.Graph
             }
         }
 
+        /// <summary>
+        /// Tests whether 2 braches are int parallel or not
+        /// </summary>
+        /// <remarks>Two branches are considered in parallel if they have the same 2 nodes, regardless of their order</remarks>
+        /// <param name="other">The other branch to test with</param>
+        /// <returns><c>true</c> if they are in parallel, otherwise <c>false</c></returns>
         public bool AreParallelBranches(Branch other) =>
-            (other.Nodes.n1, other.Nodes.n2) == (Nodes.n2, Nodes.n1) || other.Nodes == Nodes;
+            (other.StartNode, other.EndNode) == (EndNode, StartNode) || (other.StartNode, other.EndNode) == (StartNode, EndNode);
         
-        public override string ToString() => $"{Nodes.n1} [{String.Join(", ", Components)}] {Nodes.n2}";
-        public string Display() => $"{Nodes.n1} [{String.Join(", ", Components)}] {Nodes.n2} - Resistance : {Resistance} Ohms";
+        public override string ToString() => $"{StartNode} [{String.Join(", ", Components)}] {EndNode}";
+        /// <summary>
+        /// Displays information about the branch
+        /// </summary>
+        /// <returns>A <see cref="string"/> containing the nodes, components and the resistance of the branch</returns>
+        public string Display() => $"{this} - Resistance : {Resistance} Ohms";
+
+        public static bool operator ==(Branch? left, Branch? right)
+        {
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
+
+            return left.Components.SequenceEqual(right.Components) &&
+                   left.StartNode == right.StartNode &&
+                   left.EndNode == right.EndNode &&
+                   left.Resistance.Equals(right.Resistance);
+        }
+
+        public static bool operator !=(Branch left, Branch right) => !(left == right);
+
+        public override bool Equals(object? obj) => obj is Branch other && this == other;
+    
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(
+                Components?.Aggregate(0, (acc, v) => acc ^ v.GetHashCode()) ?? 0,
+                StartNode,
+                EndNode,
+                Resistance
+            );
+        }
     }
 }
